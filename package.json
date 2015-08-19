@@ -1,0 +1,27 @@
+{
+  "name": "node-search-in-directory",
+  "version": "0.0.1-alpha.1",
+  "description": "指定ディレクトリ内のファイルをスキャンし、文字列を検索します。",
+  "main": "node/main.js",
+  "scripts": {
+    "test": "mocha --ui tdd ./tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomk79/node-search-in-directory.git"
+  },
+  "author": "Tomoya Koyanagi <tomk79@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomk79/node-search-in-directory/issues"
+  },
+  "homepage": "https://github.com/tomk79/node-search-in-directory#readme",
+  "dependencies": {
+    "glob": "^5.0.10",
+    "mkdirp": "^0.5.1",
+    "phpjs": "^1.3.2"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0"
+  }
+}
