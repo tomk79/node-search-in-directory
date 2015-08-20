@@ -18,6 +18,7 @@
   "homepage": "https://github.com/tomk79/node-search-in-directory#readme",
   "dependencies": {
     "glob": "^5.0.10",
+    "iterate79": "0.0.1",
     "mkdirp": "^0.5.1",
     "phpjs": "^1.3.2"
   },

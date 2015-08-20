@@ -3,27 +3,38 @@ var assert = require('assert');
 var fs = require('fs');
 
 function getMain( options ){
-	return require('../node/main.js');
+	return new require('../node/main.js');
 }
-
-describe('検索対象のファイルリストを作成する', function() {
-	var searchInDir = getMain();
-
-	it("検索対象をリストアップする", function(done) {
-		searchInDir.ls( __dirname+'/data/standard/' );
-		assert.equal(0, 0);
-		done();
-	});
-
-});
 
 describe('テキストを検索する', function() {
 	var searchInDir = getMain();
 
 	it("ディレクトリから文字列を検索", function(done) {
-		searchInDir.find( 'DOCTYPE', __dirname+'/data/standard/' );
-		assert.equal(0, 0);
-		done();
+		searchInDir.find(
+			[
+				__dirname+'/data/**/*'
+				// __dirname+'/data/standard/**/*'
+			] ,
+			{
+				'keyword': /./i,
+				'filter': [
+					/\./i
+				] ,
+				'ignore': [
+					/deep/
+				] ,
+				'progress': function( file, result ){
+console.log(file);
+console.log(result);
+				} ,
+				'error': function( file, error ){
+				} ,
+				'complete': function(){
+					assert.equal(0, 0);
+					done();
+				}
+			}
+		);
 	});
 
 });
