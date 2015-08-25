@@ -7,13 +7,12 @@
 ```js
 var SearchInDir = require('node-search-in-directory');
 
-var searchInDir = new SearchInDir();
-searchInDir.find(
+var searchInDir = new SearchInDir(
 	[
 		'/path/to/target/**/*' // <- use glob format.
 	] ,
 	{
-		'keyword': /test/i, // <- keyword (RegExp)
+		'keyword': 'test', // <- keyword (string)
 		'filter': [
 			/./i // <- path filters (RegExp)
 		] ,
