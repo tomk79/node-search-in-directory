@@ -20,14 +20,26 @@ module.exports = function( target, cond ){
 	this.target = target;
 	this.cond = (function(cond){
 		cond = cond || {};
-		cond.keyword  = cond.keyword   || function(){};
-		cond.filter   = cond.filter    || [];
-		cond.ignore   = cond.ignore    || [];
-		cond.progress = cond.progress  || function(){};
-		cond.match    = cond.match     || function(){};
-		cond.unmatch  = cond.unmatch   || function(){};
-		cond.error    = cond.error     || function(){};
-		cond.complete = cond.complete  || function(){};
+		cond.keyword       = cond.keyword       || /.*/gi;
+		cond.filter        = cond.filter        || [];
+		cond.ignore        = cond.ignore        || [];
+		cond.allowRegExp   = cond.allowRegExp   || false;
+		cond.ignoreCase    = cond.ignoreCase    || false;
+		cond.matchFileName = cond.matchFileName || false;
+		cond.progress      = cond.progress      || function(){};
+		cond.match         = cond.match         || function(){};
+		cond.unmatch       = cond.unmatch       || function(){};
+		cond.error         = cond.error         || function(){};
+		cond.complete      = cond.complete      || function(){};
+		try {
+			if( cond.allowRegExp ){
+				cond.keyword = new RegExp(cond.keyword, 'g'+(cond.ignoreCase ? 'i' : ''));
+			}else{
+				cond.keyword = new RegExp(php.preg_quote(cond.keyword), 'g'+(cond.ignoreCase ? 'i' : ''));
+			}
+		} catch (e) {
+			cond.keyword = /.*/gi;
+		}
 		if( typeof(cond.filter) == typeof('') ){
 			cond.filter = [cond.filter];
 		}
@@ -48,8 +60,14 @@ module.exports = function( target, cond ){
 				it79.ary(
 					files,
 					function(it2ary, data, i){
-						if(this.canceled){return;}
-						var path = fs.realpathSync(files[i]);
+						if( _this.canceled ){
+							return;
+						}
+						if( _this.completed ){
+							return;
+						}
+
+						var path = fs.realpathSync( files[i] );
 						var type = ( fs.statSync(path).isDirectory() ? 'dir' : 'file' );
 
 						if( !(function(){
@@ -110,14 +128,20 @@ module.exports = function( target, cond ){
 			'count': 0
 		};
 
-		if( php.basename(row.path).match( _this.cond.keyword ) ){
-			// ファイル名にキーワードマッチング
-			result.matched = true;
+		if( _this.cond.matchFileName ){
+			if( php.basename(row.path).match( _this.cond.keyword ) ){
+				// ファイル名にキーワードマッチング
+				result.matched = true;
+			}
 		}
 
 		if( row.type == 'file' ){
 			// ファイルの場合
 			fs.readFile( row.path, function( err, bin ){
+				if(_this.completed){
+					return;
+				}
+
 				var result = {
 					'matched': false,
 					'type': 'file',
@@ -134,7 +158,7 @@ module.exports = function( target, cond ){
 				}
 				bin = bin.toString('UTF8');
 
-				var matched = bin.match( new RegExp(php.preg_quote(_this.cond.keyword), 'g') );
+				var matched = bin.match( _this.cond.keyword );
 				if( matched ){
 					// キーワードマッチング
 					result.matched = true;
@@ -186,7 +210,7 @@ module.exports = function( target, cond ){
 			});
 		}
 
-		if( statusFilelist == true && !_this.queue.length && countTarget == countDone ){
+		if( _this.canceled || statusFilelist == true && !_this.queue.length && countTarget == countDone ){
 			complete();
 			return;
 		}

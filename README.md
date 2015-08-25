@@ -19,6 +19,9 @@ var searchInDir = new SearchInDir(
 		'ignore': [
 			/deep/ // <- ignore path filters (RegExp)
 		] ,
+		'allowRegExp': false,
+		'ignoreCase': false,
+		'matchFileName': false,
 		'progress': function( done, max ){
 			console.log( done +'/'+ max + ' done.' );
 		} ,

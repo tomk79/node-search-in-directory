@@ -21,6 +21,9 @@ describe('テキストを検索する', function() {
 					/deep/,
 					/node_modules/
 				] ,
+				'allowRegExp': false,
+				'ignoreCase': false,
+				'matchFileName': false,
 				'progress': function( done, max ){
 					console.log( done +'/'+ max + ' done.' );
 				} ,
@@ -88,7 +91,7 @@ describe('テキスト検索を中止する', function() {
 		setTimeout(function(){
 			var canceled = searchInDir.cancel();
 			assert.ok(canceled);
-		}, 1500);
+		}, 500);
 
 	});
 
