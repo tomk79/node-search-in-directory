@@ -11,6 +11,7 @@ module.exports = function( target, cond ){
 
 	this.mainloopTimer;
 	this.canceled = false;
+	this.completed = false;
 	var countTarget = 0;
 	var countDone = 0;
 	var statusFilelist = false;
@@ -64,7 +65,9 @@ module.exports = function( target, cond ){
 							}
 							return true;
 						})() ){
-							it2ary.next();
+							setTimeout(function(){
+								it2ary.next();
+							}, 0);
 							return;
 						}
 
@@ -122,8 +125,11 @@ module.exports = function( target, cond ){
 				};
 				if(err){
 					// エラー
+					countDone ++;
 					result.error = err;
 					_this.cond.error(row.path, result);
+					_this.cond.progress(countDone, countTarget);
+					callback();
 					return;
 				}
 				bin = bin.toString('UTF8');
@@ -145,6 +151,7 @@ module.exports = function( target, cond ){
 				}
 				_this.cond.progress(countDone, countTarget);
 				callback();
+				return;
 
 			} );
 		}else{
@@ -159,6 +166,7 @@ module.exports = function( target, cond ){
 			}
 			_this.cond.progress(countDone, countTarget);
 			callback();
+			return;
 		}
 	}
 
@@ -168,21 +176,34 @@ module.exports = function( target, cond ){
 	 */
 	function mainloop(){
 		// console.log('mainloop()');
-		if( _this.queue.length ){
+		if( !_this.canceled && _this.queue.length ){
 			var row = _this.queue.shift();
 			searchInFile(row, function(){
-				if( _this.canceled || statusFilelist == true && !_this.queue.length && countTarget == countDone ){
-					clearTimeout(_this.mainloopTimer);
-					_this.cond.complete();
+				if( _this.canceled ){
+					complete();
 					return;
 				}
 			});
+		}
+
+		if( statusFilelist == true && !_this.queue.length && countTarget == countDone ){
+			complete();
+			return;
 		}
 
 		_this.mainloopTimer = setTimeout( mainloop, 3);
 		return;
 	}
 
+	function complete(){
+		if(_this.completed){
+			return;
+		}
+		_this.completed = true;
+		clearTimeout(_this.mainloopTimer);
+		_this.cond.complete();
+		return;
+	}
 
 	/**
 	 * キャンセル
