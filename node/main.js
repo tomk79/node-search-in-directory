@@ -1,7 +1,7 @@
 /**
  * node-search-in-directory
  */
-module.exports = new (function(){
+module.exports = function(){
 	var cProc = require('child_process');
 	var fs = require('fs');
 	var glob = require('glob');
@@ -15,11 +15,14 @@ module.exports = new (function(){
 	 * @return {Object}      [this]
 	 */
 	this.find = function( target, cond ){
+		var mainloopTimer;
 		cond = cond || {};
 		cond.keyword  = cond.keyword   || function(){};
 		cond.filter   = cond.filter    || [];
 		cond.ignore   = cond.ignore    || [];
 		cond.progress = cond.progress  || function(){};
+		cond.match    = cond.match     || function(){};
+		cond.unmatch  = cond.unmatch   || function(){};
 		cond.error    = cond.error     || function(){};
 		cond.complete = cond.complete  || function(){};
 
@@ -40,34 +43,45 @@ module.exports = new (function(){
 			function(it, row, idx){
 				glob(row, {}, function(er, files){
 					// console.log(files);
-					for( var i = 0; i<files.length; i ++ ){
-						var path = fs.realpathSync(files[i]);
-						var type = ( fs.statSync(path).isDirectory() ? 'dir' : 'file' );
+					it79.ary(
+						files,
+						function(it2ary, data, i){
+							var path = fs.realpathSync(files[i]);
+							var type = ( fs.statSync(path).isDirectory() ? 'dir' : 'file' );
 
-						if( !(function(){
-							for(var idx in cond.filter){
-								if( !path.match(cond.filter[idx]) ){
-									return false;
+							if( !(function(){
+								for(var idx in cond.filter){
+									if( !path.match(cond.filter[idx]) ){
+										return false;
+									}
 								}
-							}
-							for(var idx in cond.ignore){
-								if(path.match(cond.ignore[idx])){
-									return false;
+								for(var idx in cond.ignore){
+									if(path.match(cond.ignore[idx])){
+										return false;
+									}
 								}
+								return true;
+							})() ){
+								it2ary.next();
+								return;
 							}
-							return true;
-						})() ){
-							continue;
+
+							// 対象を追加
+							countTarget ++;
+							queue.push({
+								'path': path,
+								'type': type
+							});
+							cond.progress(countDone, countTarget);
+							setTimeout(function(){
+								it2ary.next();
+							}, 1);
+							return;
+						} ,
+						function(){
+							it.next();
 						}
-
-						// 対象を追加
-						countTarget ++;
-						queue.push({
-							'path': path,
-							'type': type
-						});
-					}
-					it.next();
+					);
 				});
 			},
 			function(){
@@ -76,7 +90,7 @@ module.exports = new (function(){
 		);
 
 		// ファイルパスからファイルを開き、検索する
-		// 検索結果は progress() にコールバックする。
+		// 検索結果は match(), または unmatch() にコールバックする。
 		function searchInFile(row){
 			// console.log(row);
 
@@ -91,6 +105,12 @@ module.exports = new (function(){
 
 			if( row.type == 'file' ){
 				fs.readFile( row.path, function( err, bin ){
+					if(err){
+						// エラー
+						result.error = err;
+						cond.error(row.path, result);
+						return;
+					}
 					bin = bin.toString('UTF8');
 
 					if( bin.match( cond.keyword ) ){
@@ -99,12 +119,26 @@ module.exports = new (function(){
 					}
 
 					countDone ++;
-					cond.progress(row.path, result);
+					if( result.matched ){
+						// マッチした場合
+						cond.match(row.path, result);
+					}else{
+						// マッチしなかった場合
+						cond.unmatch(row.path, result);
+					}
+					cond.progress(countDone, countTarget);
 
 				} );
 			}else{
 				countDone ++;
-				cond.progress(row.path, result);
+				if( result.matched ){
+					// マッチした場合
+					cond.match(row.path, result);
+				}else{
+					// マッチしなかった場合
+					cond.unmatch(row.path, result);
+				}
+				cond.progress(countDone, countTarget);
 			}
 		}
 
@@ -122,7 +156,7 @@ module.exports = new (function(){
 				new searchInFile(row);
 			}
 
-			setTimeout( mainloop, 10);
+			mainloopTimer = setTimeout( mainloop, 1);
 			return;
 		}
 		mainloop();
@@ -130,4 +164,4 @@ module.exports = new (function(){
 		return this;
 	}
 
-})();
+}
