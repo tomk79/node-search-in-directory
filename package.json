@@ -1,6 +1,6 @@
 {
   "name": "node-search-in-directory",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1",
   "description": "指定ディレクトリ内のファイルをスキャンし、文字列を検索します。",
   "main": "node/main.js",
   "scripts": {
