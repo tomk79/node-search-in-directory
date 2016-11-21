@@ -59,6 +59,7 @@ module.exports = function( target, cond ){
 				// console.log(files);
 				it79.ary(
 					files,
+					5,
 					function(it2ary, data, i){
 						if( _this.canceled ){
 							return;
@@ -200,14 +201,32 @@ module.exports = function( target, cond ){
 	 */
 	function mainloop(){
 		// console.log('mainloop()');
+		var queue = [];
 		if( !_this.canceled && _this.queue.length ){
-			var row = _this.queue.shift();
-			searchInFile(row, function(){
-				if( _this.canceled ){
-					complete();
-					return;
+			// var row = _this.queue.shift();
+			queue = _this.queue;
+			_this.queue = [];
+
+			it79.ary(
+				queue,
+				5,
+				function(it1, row, idx){
+					searchInFile(row, function(){
+						if( _this.canceled ){
+							it1.break();
+							return;
+						}
+						it1.next();
+						return;
+					});
+				},
+				function(){
+					if( _this.canceled ){
+						complete();
+						return;
+					}
 				}
-			});
+			);
 		}
 
 		if( _this.canceled || statusFilelist == true && !_this.queue.length && countTarget == countDone ){

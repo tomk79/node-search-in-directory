@@ -18,29 +18,28 @@ describe('テキストを検索する', function() {
 					/./i
 				] ,
 				'ignore': [
-					/deep/,
-					/node_modules/
+					/\.git/
 				] ,
 				'allowRegExp': false,
 				'ignoreCase': false,
 				'matchFileName': false,
 				'progress': function( done, max ){
-					console.log( done +'/'+ max + ' done.' );
+					console.log( '    '+done +'/'+ max + ' done.' );
 				} ,
 				'match': function( file, result ){
-					console.log('matche: ' + file);
-					console.log(result);
+					console.log('    '+'matche: ' + file);
+					console.log('    ',result);
 				} ,
 				'unmatch': function( file, result ){
-					console.log('unmatch: ' + file);
-					console.log(result);
+					console.log('    '+'unmatch: ' + file);
+					console.log('    ',result);
 				} ,
 				'error': function( file, error ){
-					console.log('error: ' + file);
-					console.log(result);
+					console.log('    '+'error: ' + file);
+					console.log('    ',result);
 				} ,
 				'complete': function(){
-					console.log('all done!');
+					console.log('    '+'all done!');
 					searchInDir = null;
 					assert.equal(1, 1);
 					done();
@@ -56,6 +55,7 @@ describe('テキスト検索を中止する', function() {
 
 	it("cancel() する", function(done) {
 		this.timeout(1*60*1000);
+		var lastProgress = '---';
 		var searchInDir = new SearchInDir(
 			[
 				__dirname+'/../**/*'
@@ -65,8 +65,11 @@ describe('テキスト検索を中止する', function() {
 				'filter': [
 					/./i
 				] ,
+				'ignore': [
+					/\.git/
+				] ,
 				'progress': function( done, max ){
-					console.log( done +'/'+ max + ' done.' );
+					lastProgress = done +'/'+ max + ' done.';
 				} ,
 				'match': function( file, result ){
 					// console.log('matche: ' + file);
@@ -81,7 +84,8 @@ describe('テキスト検索を中止する', function() {
 					// console.log(result);
 				} ,
 				'complete': function(){
-					console.log('all done!');
+					console.log('    '+lastProgress);
+					console.log('    '+'all done!');
 					assert.equal(1, 1);
 					done();
 				}
@@ -91,7 +95,7 @@ describe('テキスト検索を中止する', function() {
 		setTimeout(function(){
 			var canceled = searchInDir.cancel();
 			assert.ok(canceled);
-		}, 500);
+		}, 300);
 
 	});
 
