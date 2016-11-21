@@ -50,6 +50,17 @@ var searchInDir = new SearchInDir(
 );
 ```
 
+## Change log
+
+### search-in-directory@0.1.0 (2016-11-21)
+
+- パッケージ名を `node-search-in-directory` から `search-in-directory` に変更。
+- パフォーマンス改善。5件ずつ並列処理するように変更。
+
+### node-search-in-directory@0.0.1 (2015-09-04)
+
+- initial release.
+
 ## ライセンス - License
 
 MIT License https://opensource.org/licenses/mit-license.php
