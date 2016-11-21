@@ -36,7 +36,7 @@ describe('テキストを検索する', function() {
 				} ,
 				'error': function( file, error ){
 					console.log('    '+'error: ' + file);
-					console.log('    ',result);
+					console.log('    ',error);
 				} ,
 				'complete': function(){
 					console.log('    '+'all done!');
@@ -81,7 +81,7 @@ describe('テキスト検索を中止する', function() {
 				} ,
 				'error': function( file, error ){
 					// console.log('error: ' + file);
-					// console.log(result);
+					// console.log(error);
 				} ,
 				'complete': function(){
 					console.log('    '+lastProgress);

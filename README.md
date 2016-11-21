@@ -1,11 +1,17 @@
-# node-search-in-directory
+# search-in-directory
 
 指定ディレクトリ内のファイルをスキャンし、文字列を検索します。
 
-## Usage
+## インストール - Install
+
+```
+$ npm install --save search-in-directory
+```
+
+## 使い方 - Usage
 
 ```js
-var SearchInDir = require('node-search-in-directory');
+var SearchInDir = require('search-in-directory');
 
 var searchInDir = new SearchInDir(
 	[
@@ -35,7 +41,7 @@ var searchInDir = new SearchInDir(
 		} ,
 		'error': function( file, error ){
 			console.log('error: ' + file);
-			console.log(result);
+			console.log(error);
 		} ,
 		'complete': function(){
 			console.log('all done!');
@@ -44,6 +50,13 @@ var searchInDir = new SearchInDir(
 );
 ```
 
-## License
+## ライセンス - License
 
-MIT
+MIT License https://opensource.org/licenses/mit-license.php
+
+
+## 作者 - Author
+
+- Tomoya Koyanagi <tomk79@gmail.com>
+- website: <http://www.pxt.jp/>
+- Twitter: @tomk79 <http://twitter.com/tomk79/>
