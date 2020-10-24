@@ -172,9 +172,10 @@ module.exports = function( target, cond ){
 					result.count = matched.length;
 
 					var index = bin.search( _this.cond.keyword );
-					index = index - 20;
+					index = index - 30;
 					if( index < 0 ){ index = 0; }
-					var highlight = bin.substr(index, 50);
+
+					var highlight = bin.substr(index, (matched[0].length) + 60);
 					highlight = highlight.replace(_this.cond.keyword, '<<<<<<$&>>>>>>');
 					highlight = highlight.split(/&/).join('&amp;');
 					highlight = highlight.split(/</).join('&lt;');
@@ -182,6 +183,7 @@ module.exports = function( target, cond ){
 					highlight = highlight.split(/"/).join('&quot;');
 					highlight = highlight.split('&lt;&lt;&lt;&lt;&lt;&lt;').join('<strong>');
 					highlight = highlight.split('&gt;&gt;&gt;&gt;&gt;&gt;').join('</strong>');
+					highlight = highlight.split(/\r\n|\r|\n|\t/).join(' ');
 					result.highlights.push(highlight);
 				}
 

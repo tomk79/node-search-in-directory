@@ -52,6 +52,10 @@ var searchInDir = new SearchInDir(
 
 ## Change log
 
+### search-in-directory@0.2.0 (リリース日未定)
+
+- ハイライト表示を出力するようになった。
+
 ### search-in-directory@0.1.0 (2016-11-21)
 
 - パッケージ名を `node-search-in-directory` から `search-in-directory` に変更。
