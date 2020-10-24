@@ -126,15 +126,19 @@ module.exports = function( target, cond ){
 		var result = {
 			'matched': false,
 			'type': row.type,
-			'count': 0
+			'count': 0,
+			'highlights': []
 		};
 
 		if( _this.cond.matchFileName ){
 			if( php.basename(row.path).match( _this.cond.keyword ) ){
 				// ファイル名にキーワードマッチング
 				result.matched = true;
+				result.highlights.push( php.basename(row.path) );
 			}
 		}
+
+		var tmpHighlights = result.highlights;
 
 		if( row.type == 'file' ){
 			// ファイルの場合
@@ -146,7 +150,8 @@ module.exports = function( target, cond ){
 				var result = {
 					'matched': false,
 					'type': 'file',
-					'count': 0
+					'count': 0,
+					'highlights': tmpHighlights
 				};
 				if(err){
 					// エラー
@@ -162,8 +167,22 @@ module.exports = function( target, cond ){
 				var matched = bin.match( _this.cond.keyword );
 				if( matched ){
 					// キーワードマッチング
+					// console.log(matched);
 					result.matched = true;
 					result.count = matched.length;
+
+					var index = bin.search( _this.cond.keyword );
+					index = index - 20;
+					if( index < 0 ){ index = 0; }
+					var highlight = bin.substr(index, 50);
+					highlight = highlight.replace(_this.cond.keyword, '<<<<<<$&>>>>>>');
+					highlight = highlight.split(/&/).join('&amp;');
+					highlight = highlight.split(/</).join('&lt;');
+					highlight = highlight.split(/>/).join('&gt;');
+					highlight = highlight.split(/"/).join('&quot;');
+					highlight = highlight.split('&lt;&lt;&lt;&lt;&lt;&lt;').join('<strong>');
+					highlight = highlight.split('&gt;&gt;&gt;&gt;&gt;&gt;').join('</strong>');
+					result.highlights.push(highlight);
 				}
 
 				countDone ++;
