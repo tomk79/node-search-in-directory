@@ -20,100 +20,114 @@ module.exports = function( target, cond ){
 	this.target = target;
 	this.cond = (function(cond){
 		cond = cond || {};
-		cond.keyword       = cond.keyword       || /.*/gi;
-		cond.filter        = cond.filter        || [];
-		cond.ignore        = cond.ignore        || [];
-		cond.allowRegExp   = cond.allowRegExp   || false;
-		cond.ignoreCase    = cond.ignoreCase    || false;
-		cond.matchFileName = cond.matchFileName || false;
 		cond.progress      = cond.progress      || function(){};
 		cond.match         = cond.match         || function(){};
 		cond.unmatch       = cond.unmatch       || function(){};
 		cond.error         = cond.error         || function(){};
 		cond.complete      = cond.complete      || function(){};
-		try {
-			if( cond.allowRegExp ){
-				cond.keyword = new RegExp(cond.keyword, 'g'+(cond.ignoreCase ? 'i' : ''));
-			}else{
-				cond.keyword = new RegExp(php.preg_quote(cond.keyword), 'g'+(cond.ignoreCase ? 'i' : ''));
-			}
-		} catch (e) {
-			cond.keyword = /.*/gi;
-		}
-		if( typeof(cond.filter) == typeof('') ){
-			cond.filter = [cond.filter];
-		}
-		if( typeof(cond.ignore) == typeof('') ){
-			cond.ignore = [cond.ignore];
-		}
 		return cond;
 	})(cond);
-
-
 	if(this.queue.length){return this;}
 
-	// 対象ファイルの一覧を作成する
-	it79.ary(this.target,
-		function(it, row, idx){
-			glob(row, {}, function(er, files){
-				// console.log(files);
-				it79.ary(
-					files,
-					5,
-					function(it2ary, data, i){
-						if( _this.canceled ){
-							return;
-						}
-						if( _this.completed ){
-							return;
-						}
 
-						var path = fs.realpathSync( files[i] );
-						var type = ( fs.statSync(path).isDirectory() ? 'dir' : 'file' );
 
-						if( !(function(){
-							for(var idx in _this.cond.filter){
-								if( !path.match(_this.cond.filter[idx]) ){
-									return false;
-								}
+	/**
+	 * 検索を実行する
+	 */
+	this.start = function(keyword, options, complete){
+		complete = complete || function(){};
+		this.cond.complete = complete;
+
+		this.cond = (function(cond, keyword, options){
+			cond = cond || {};
+			cond.keyword       = keyword            || /.*/gi;
+			cond.filter        = options.filter        || [];
+			cond.ignore        = options.ignore        || [];
+			cond.allowRegExp   = options.allowRegExp   || false;
+			cond.ignoreCase    = options.ignoreCase    || false;
+			cond.matchFileName = options.matchFileName || false;
+			try {
+				if( cond.allowRegExp ){
+					cond.keyword = new RegExp(cond.keyword, 'g'+(cond.ignoreCase ? 'i' : ''));
+				}else{
+					cond.keyword = new RegExp(php.preg_quote(cond.keyword), 'g'+(cond.ignoreCase ? 'i' : ''));
+				}
+			} catch (e) {
+				cond.keyword = /.*/gi;
+			}
+			if( typeof(cond.filter) == typeof('') ){
+				cond.filter = [cond.filter];
+			}
+			if( typeof(cond.ignore) == typeof('') ){
+				cond.ignore = [cond.ignore];
+			}
+			return cond;
+		})(this.cond, keyword, options);
+
+		mainloop();
+
+		// 対象ファイルの一覧を作成する
+		it79.ary(this.target,
+			function(it, row, idx){
+				glob(row, {}, function(er, files){
+					// console.log(files);
+					it79.ary(
+						files,
+						5,
+						function(it2ary, data, i){
+							if( _this.canceled ){
+								return;
 							}
-							for(var idx in _this.cond.ignore){
-								if(path.match(_this.cond.ignore[idx])){
-									return false;
-								}
+							if( _this.completed ){
+								return;
 							}
-							return true;
-						})() ){
+
+							var path = fs.realpathSync( files[i] );
+							var type = ( fs.statSync(path).isDirectory() ? 'dir' : 'file' );
+
+							if( !(function(){
+								for(var idx in _this.cond.filter){
+									if( !path.match(_this.cond.filter[idx]) ){
+										return false;
+									}
+								}
+								for(var idx in _this.cond.ignore){
+									if(path.match(_this.cond.ignore[idx])){
+										return false;
+									}
+								}
+								return true;
+							})() ){
+								setTimeout(function(){
+									it2ary.next();
+								}, 0);
+								return;
+							}
+
+							// 対象を追加
+							countTarget ++;
+							_this.queue.push({
+								'path': path,
+								'type': type
+							});
+							_this.cond.progress(countDone, countTarget);
 							setTimeout(function(){
 								it2ary.next();
 							}, 0);
 							return;
+						} ,
+						function(){
+							it.next();
 						}
+					);
+				});
+			},
+			function(){
+				statusFilelist = true;
+			}
+		);
 
-						// 対象を追加
-						countTarget ++;
-						_this.queue.push({
-							'path': path,
-							'type': type
-						});
-						_this.cond.progress(countDone, countTarget);
-						setTimeout(function(){
-							it2ary.next();
-						}, 0);
-						return;
-					} ,
-					function(){
-						it.next();
-					}
-				);
-			});
-		},
-		function(){
-			statusFilelist = true;
-		}
-	);
-
-	mainloop();
+	}
 
 
 	/**
@@ -259,6 +273,9 @@ module.exports = function( target, cond ){
 		return;
 	}
 
+	/**
+	 * 検索を完了する
+	 */
 	function complete(){
 		if(_this.completed){
 			return;

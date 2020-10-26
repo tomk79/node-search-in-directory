@@ -13,16 +13,6 @@ describe('テキストを検索する', function() {
 				__dirname+'/../**/*'
 			] ,
 			{
-				'keyword': 'test',
-				'filter': [
-					/./i
-				] ,
-				'ignore': [
-					/\.git/
-				] ,
-				'allowRegExp': false,
-				'ignoreCase': false,
-				'matchFileName': false,
 				'progress': function( done, max ){
 					console.log( '    '+done +'/'+ max + ' done.' );
 				} ,
@@ -37,15 +27,25 @@ describe('テキストを検索する', function() {
 				'error': function( file, error ){
 					console.log('    '+'error: ' + file);
 					console.log('    ',error);
-				} ,
-				'complete': function(){
-					console.log('    '+'all done!');
-					searchInDir = null;
-					assert.equal(1, 1);
-					done();
 				}
 			}
 		);
+		searchInDir.start('test', {
+			'filter': [
+				/./i
+			] ,
+			'ignore': [
+				/\.git/
+			] ,
+			'allowRegExp': false,
+			'ignoreCase': false,
+			'matchFileName': false
+		}, function(){
+			console.log('    '+'all done!');
+			searchInDir = null;
+			assert.equal(1, 1);
+			done();
+		});
 	});
 
 });
@@ -61,13 +61,6 @@ describe('テキスト検索を中止する', function() {
 				__dirname+'/../**/*'
 			] ,
 			{
-				'keyword': 'test',
-				'filter': [
-					/./i
-				] ,
-				'ignore': [
-					/\.git/
-				] ,
 				'progress': function( done, max ){
 					lastProgress = done +'/'+ max + ' done.';
 				} ,
@@ -82,15 +75,22 @@ describe('テキスト検索を中止する', function() {
 				'error': function( file, error ){
 					// console.log('error: ' + file);
 					// console.log(error);
-				} ,
-				'complete': function(){
-					console.log('    '+lastProgress);
-					console.log('    '+'all done!');
-					assert.equal(1, 1);
-					done();
 				}
 			}
 		);
+		searchInDir.start('test', {
+			'filter': [
+				/./i
+			] ,
+			'ignore': [
+				/\.git/
+			] ,
+		}, function(){
+			console.log('    '+lastProgress);
+			console.log('    '+'all done!');
+			assert.equal(1, 1);
+			done();
+		});
 
 		setTimeout(function(){
 			var canceled = searchInDir.cancel();
